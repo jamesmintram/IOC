@@ -61,7 +61,10 @@ protected:
 };
 
 
-
+class IFacebookService
+{
+    virtual int GetVal() = 0;
+};
 class IAchievementsService
 {
 public:
@@ -75,17 +78,23 @@ public:
 protected:
     int val;
 };
-class FacebookService
+class FacebookService : public IFacebookService
 {
+public:
+    FacebookService(int _val) : val(_val){}
+    virtual int GetVal() {return val;}
+protected:
+    int val;
 };
 
 //  Need to be visible wherever Injectables are used
 DEFINE_INJECTABLE_SERVICE(IAchievementsService)
+DEFINE_INJECTABLE_SERVICE(IFacebookService)
 
 //  Only need to be visible where the injectables are
 //  registered with a Registry
 DEFINE_INJECTABLE_SERVICE_CLASS(AchievementsService, IAchievementsService)
-DEFINE_INJECTABLE_SERVICE(FacebookService)
+DEFINE_INJECTABLE_SERVICE_CLASS(FacebookService, IFacebookService)
 
 class MyGameObject
 {
@@ -94,15 +103,15 @@ public:
         : Achievements(registry)
         , Facebook(registry)
     {}
-    Injectable<AchievementsService> Achievements;
-    Injectable<FacebookService> Facebook;
+    Injectable<IAchievementsService> Achievements;
+    Injectable<IFacebookService> Facebook;
 };
 
 int main(int argc, const char * argv[]) {
     
     ServiceRegistry registry;
     registry.RegisterService(new AchievementsService(12));
-    registry.RegisterService(new FacebookService());
+    registry.RegisterService(new FacebookService(10));
     
     MyGameObject myObject(registry);
 
